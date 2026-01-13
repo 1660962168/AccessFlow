@@ -25,8 +25,8 @@ body {
   overflow-x: hidden;
   position: relative;
 }
-a{
-    text-decoration: none;
+a {
+  text-decoration: none;
 }
 
 /* --- 遮罩层 (新增：用于手机端点击关闭侧边栏) --- */
@@ -360,98 +360,175 @@ a{
 /* --- 表单与按钮样式 (追加到 style.css 末尾) --- */
 
 .form-group {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .form-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #5a5c69;
-    font-size: 0.9rem;
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #5a5c69;
+  font-size: 0.9rem;
 }
 
 /* 带图标的输入框容器 */
 .input-icon-wrapper {
-    position: relative;
+  position: relative;
 }
 
 .input-icon {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #b7b9cc;
-    font-size: 0.9rem;
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #b7b9cc;
+  font-size: 0.9rem;
 }
 
 .form-control {
-    width: 100%;
-    padding: 12px 15px 12px 40px; /* 左边距留给图标 */
-    border: 1px solid #d1d3e2;
-    border-radius: 5px;
-    font-size: 0.95rem;
-    color: #6e707e;
-    transition: 0.3s;
-    outline: none;
+  width: 100%;
+  padding: 12px 15px 12px 40px; /* 左边距留给图标 */
+  border: 1px solid #d1d3e2;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  color: #6e707e;
+  transition: 0.3s;
+  outline: none;
 }
 
 .form-control:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(78, 115, 223, 0.1);
 }
 
 .form-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
 }
 
-.btn-submit, .btn-cancel {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: 0.2s;
-    font-weight: 600;
+.btn-submit,
+.btn-cancel {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: 600;
 }
 
 .btn-submit {
-    background-color: var(--primary-color);
-    color: white;
+  background-color: var(--primary-color);
+  color: white;
 }
 
 .btn-submit:hover {
-    background-color: #2e59d9;
+  background-color: #2e59d9;
 }
 
 .btn-cancel {
-    background-color: #eaecf4;
-    color: #858796;
+  background-color: #eaecf4;
+  color: #858796;
 }
 
 .btn-cancel:hover {
-    background-color: #dddfeb;
+  background-color: #dddfeb;
 }
 
 /* 提示条样式 */
 .alert {
-    padding: 15px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-    border-left: 4px solid transparent;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  border-left: 4px solid transparent;
 }
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border-left-color: #28a745;
+  background-color: #d4edda;
+  color: #155724;
+  border-left-color: #28a745;
 }
 .alert-danger {
-    background-color: #f8d7da;
-    color: #721c24;
-    border-left-color: #e74a3b;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left-color: #e74a3b;
 }
-.card-body{
-    width: 100%;
+.card-body {
+  width: 100%;
+}
+
+/* static/css/style.css */
+
+/* 消息提示框容器 */
+.flash-messages {
+  margin-bottom: 20px;
+}
+
+/* 基础 Alert 样式 */
+.alert {
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  position: relative; /* 为了定位关闭按钮 */
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 图标和文字的间距 */
+}
+
+/* 成功提示 (绿色) */
+.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}
+
+/* 错误/危险提示 (红色) */
+.alert-danger {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+/* 警告提示 (黄色) */
+.alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+/* 关闭按钮 */
+.close-btn {
+  margin-left: auto; /* 推到最右边 */
+  cursor: pointer;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.close-btn:hover {
+  opacity: 1;
+}
+/* 删除按钮样式 */
+.btn-delete {
+  background-color: #ff4d4f; /* 红色背景 */
+  color: white; /* 白色文字 */
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px; /* 图标和文字间距 */
+}
+
+.btn-delete:hover {
+  background-color: #d9363e; /* 鼠标悬停变深红 */
+}
+
+.btn-delete i {
+  font-size: 12px;
 }

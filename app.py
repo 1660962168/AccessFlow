@@ -4,6 +4,11 @@ from exts import db
 from models import *
 from flask_migrate import Migrate
 from flask_apscheduler import APScheduler
+import os
+import cv2
+import time
+import numpy as np
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 # 绑定配置文件
@@ -15,9 +20,15 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/recognition', methods=['GET', 'POST'])
+def recognition():
+    return render_template('recognition.html')
+
 @app.route('/records')
 def records():
     return render_template('records.html')
@@ -27,9 +38,13 @@ def password():
     if request.method == 'POST':
         old_password = request.form.get('old_password')
         new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
         user = User.query.filter_by(username=session.get('username')).first()
+        if new_password!= confirm_password:
+            flash('两次输入的密码不一致', 'warning')
+            return render_template('password.html')
         if user and user.check_password(old_password):
-            user.password = new_password
+            user.set_password(new_password)  
             db.session.commit()
             flash('密码修改成功','success')
             return redirect(url_for('password'))
@@ -42,13 +57,28 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+
+        # 1. 检查输入是否为空
+        if not username or not password:
+            flash('请输入账号和密码', 'warning')
+            return render_template('login.html')
+
         user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            session['username'] = username
-            flash('登录成功', 'success')
-            return redirect(url_for('index'))
+
+        # 2. 验证账号是否存在
+        if not user:
+            flash('账号不存在，请检查用户名', 'danger')
+        
+        # 3. 验证密码是否正确
+        elif not user.check_password(password):
+            flash('密码错误，请重新输入', 'danger')
+            
         else:
-            flash('用户名或密码错误', 'danger')
+            # 4. 登录成功
+            session['username'] = username
+            flash('登录成功，欢迎回来', 'success')
+            return redirect(url_for('index'))
+
     return render_template('login.html')
 
 # 退出登录
@@ -58,5 +88,23 @@ def logout():
     flash('退出登录成功','success')
     return redirect(url_for('login'))
 
+def init_data():
+    with app.app_context():
+        # 1. 自动创建所有表 (如果表不存在)
+        db.create_all() 
+        print("数据库表结构检查/创建完成。")
+
+        # 2. 检查并创建管理员
+        admin_user = User.query.filter_by(username='admin').first()
+        if not admin_user:
+            new_admin = User(username='admin')
+            new_admin.set_password('admin')
+            db.session.add(new_admin)
+            db.session.commit()
+            print("管理员账号自动创建成功：账号 admin，密码 admin")
+        else:
+            print("管理员账号已存在。")
+
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    init_data()
+    app.run(debug=True, host='0.0.0.0')

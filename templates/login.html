@@ -13,41 +13,82 @@
                     rgba(10, 25, 47, 0.95)),
                 url("https://images.unsplash.com/photo-1506521781263-d8422e82f27a?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80");
         }
+        .flash-messages {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .alert {
+        padding: 10px 15px;
+        border-radius: 4px;
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    /* 错误提示样式 (danger) */
+    .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+    /* 成功提示样式 (success) */
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    /* 警告提示样式 (warning) */
+    .alert-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+    }
     </style>
 </head>
 
 <body>
     <div class="login-card">
-        <div class="login-header">
-            <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px">
+    <div class="login-header">
+        <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 10px">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+        </svg>
+        <h1>智能车牌识别系统</h1>
+        <p>Smart Parking Management System</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <form action="#" method="POST">
+        <div class="form-group">
+            <svg class="form-icon" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <input type="text" name="username" class="form-input" placeholder="管理员账号" required 
+                   value="{{ request.form.username if request.form.username else '' }}"> 
+        </div>
+
+        <div class="form-group">
+            <svg class="form-icon" viewBox="0 0 24 24">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
-            <h1>智能车牌识别系统</h1>
-            <p>Smart Parking Management System</p>
+            <input type="password" name="password" class="form-input" placeholder="登录密码" required />
         </div>
 
-        <form action="#" method="POST">
-            <div class="form-group">
-                <input type="text" class="form-input" placeholder="管理员账号" required />
-                <svg class="form-icon" viewBox="0 0 24 24">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-            </div>
-
-            <div class="form-group">
-                <input type="password" class="form-input" placeholder="登录密码" required />
-                <svg class="form-icon" viewBox="0 0 24 24">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-            </div>
-
-            <button type="submit" class="login-btn">安全登录</button>
-        </form>
-    </div>
+        <button type="submit" class="login-btn">安全登录</button>
+    </form>
+</div>
 </body>
 
 </html>

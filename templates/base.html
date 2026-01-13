@@ -30,8 +30,12 @@
                 </a>
             </li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-video"></i><span>实时监控</span></a></li>
-            <li class="nav-item"><a href="#" class="nav-link"><i
-                        class="fa-solid fa-photo-film"></i></i></i><span>识别测试</span></a></li>
+            <li class="nav-item">
+                <a href="{{ url_for('recognition') }}"
+                    class="nav-link {% if request.endpoint == 'recognition' %}active{% endif %}">
+                    <i class="fa-solid fa-photo-film"></i><span>识别测试</span>
+                </a>
+            </li>
             <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cogs"></i><span>系统配置</span></a></li>
         </ul>
     </nav>
@@ -58,9 +62,22 @@
         </header>
 
         <div class="page-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    <i class="fas fa-info-circle"></i> {{ message }}
+                    <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
             {% block content %}
             {% endblock %}
         </div>
+    </div>
     </div>
 
     <script>
