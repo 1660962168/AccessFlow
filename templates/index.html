@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 智泊管理{% endblock %}
+
+{% block content %}
+    <div class="page-content">
+            <h2 class="page-title">仪表盘概览</h2>
+
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-info"><h3>剩余车位</h3><div class="card-value">128 / 500</div></div>
+                    <div class="card-icon"><i class="fas fa-parking"></i></div>
+                </div>
+                <div class="card success">
+                    <div class="card-info"><h3>今日入场</h3><div class="card-value">342 辆</div></div>
+                    <div class="card-icon"><i class="fas fa-car-side"></i></div>
+                </div>
+                <div class="card warning">
+                    <div class="card-info"><h3>今日营收</h3><div class="card-value">¥ 4,280</div></div>
+                    <div class="card-icon"><i class="fas fa-yen-sign"></i></div>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <h4>实时进出记录</h4>
+                    <a href="#" class="btn-sm">查看全部</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th>车牌号码</th>
+                                <th>车辆类型</th>
+                                <th>通行时间</th>
+                                <th>通道名称</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>京A·88888</td>
+                                <td>月卡车 (VIP)</td>
+                                <td>2023-10-27 10:30:05</td>
+                                <td>南门入口</td>
+                                <td><span class="status-badge status-in">入场</span></td>
+                                <td><a href="#" style="color: var(--primary-color)">详情</a></td>
+                            </tr>
+                            <tr>
+                                <td>苏E·12345</td>
+                                <td>临时车</td>
+                                <td>2023-10-27 10:28:12</td>
+                                <td>北门出口</td>
+                                <td><span class="status-badge status-out">出场</span></td>
+                                <td><a href="#" style="color: var(--primary-color)">详情</a></td>
+                            </tr>
+                            <tr>
+                                <td>沪C·NB777</td>
+                                <td>临时车</td>
+                                <td>2023-10-27 10:25:00</td>
+                                <td>南门入口</td>
+                                <td><span class="status-badge status-in">入场</span></td>
+                                <td><a href="#" style="color: var(--primary-color)">详情</a></td>
+                            </tr>
+                            <tr>
+                                <td>浙B·55667</td>
+                                <td>黑名单</td>
+                                <td>2023-10-27 10:20:11</td>
+                                <td>南门入口</td>
+                                <td><span class="status-badge status-deny">拒绝</span></td>
+                                <td><a href="#" style="color: var(--primary-color)">详情</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

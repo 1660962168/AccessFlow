@@ -1,0 +1,161 @@
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* 背景图 + 渐变遮罩 */
+  
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+/* 登录卡片容器 - 毛玻璃效果 */
+.login-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px); /* 核心磨砂效果 */
+  -webkit-backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 40px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.8s ease-out;
+  color: #fff;
+}
+
+/* 标题样式 */
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.login-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.login-header p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 表单组 */
+.form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+/* 图标样式 */
+.form-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  fill: rgba(255, 255, 255, 0.6);
+  transition: fill 0.3s;
+}
+
+/* 输入框样式 */
+.form-input {
+  width: 100%;
+  padding: 12px 15px 12px 45px; /* 左侧留出图标位置 */
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 输入框聚焦效果 */
+.form-input:focus {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: #4facfe;
+  box-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+}
+
+.form-input:focus + .form-icon {
+  fill: #4facfe;
+}
+
+/* 按钮样式 */
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #00f2fe 0%, #4facfe 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+/* 底部链接 */
+.footer-links {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.footer-links a {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+/* 简单的入场动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .login-card {
+    margin: 20px;
+    padding: 30px 20px;
+  }
+}
