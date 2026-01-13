@@ -3,5 +3,446 @@
 {% block title %}识别测试 - 智泊管理{% endblock %}
 
 {% block content %}
+<style>
+    /* --- 布局容器 --- */
+    .recognition-wrapper {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        /* 【关键修改 1】改为 stretch，强制左右两侧高度始终一致（看起来是对齐的） */
+        align-items: stretch; 
+    }
 
+    /* --- 左侧控制面板 --- */
+    .control-panel {
+        flex: 1;
+        min-width: 300px;
+        /* 【关键修改 2】移除了这里的 sticky，因为卡片现在被拉长了 */
+        display: flex;       /* 确保内部 body 能撑开 */
+        flex-direction: column;
+    }
+
+    /* 【关键修改 3】让卡片内部的内容区域悬浮，而不是卡片本身 */
+    .control-panel .card-body {
+        position: sticky;
+        top: 90px; /* 距离顶部的距离 */
+        height: fit-content; /* 只有内容高度 */
+    }
+
+    /* --- 右侧展示面板 --- */
+    .display-panel {
+        flex: 2;
+        min-width: 400px;
+        display: flex;       /* 同样确保结构稳固 */
+        flex-direction: column;
+    }
+
+    /* --- 以下样式保持不变，用于美化 --- */
+
+    /* 拖拽上传区域 */
+    .upload-area {
+        border: 2px dashed #d1d3e2;
+        border-radius: 8px;
+        padding: 30px 20px;
+        text-align: center;
+        cursor: pointer;
+        background-color: #f8f9fc;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .upload-area:hover, .upload-area.dragover {
+        border-color: var(--primary-color);
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #b7b9cc;
+        margin-bottom: 15px;
+        transition: color 0.3s;
+    }
+
+    .upload-area:hover .upload-icon {
+        color: var(--primary-color);
+    }
+
+    /* 滑块样式容器 */
+    .range-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .range-value {
+        font-weight: bold;
+        color: var(--primary-color);
+        min-width: 40px;
+        text-align: right;
+    }
+
+    input[type=range] {
+        flex-grow: 1;
+        cursor: pointer;
+    }
+
+    /* 预览图片容器 */
+    .preview-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+        margin-top: 15px;
+    }
+
+    .image-box {
+        background: #2e3b4e;
+        border-radius: 8px;
+        aspect-ratio: 16/9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #e3e6f0;
+    }
+
+    .image-box img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .empty-placeholder {
+        color: rgba(255,255,255,0.5);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+
+    .box-label {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.6);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+
+    /* 结果文本区域 */
+    .result-logs {
+        margin-top: 20px;
+        background: #1a1c23;
+        color: #00ff9d;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Consolas', 'Monaco', monospace;
+        font-size: 0.9rem;
+        min-height: 120px;
+        max-height: 300px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+    }
+
+    /* 开关样式 */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: var(--success-color);
+    }
+    input:checked + .slider:before {
+        transform: translateX(26px);
+    }
+</style>
+<div class="page-content">
+<div class="page-title">
+    <i class="fa-solid fa-photo-film"></i> 智能识别测试
+</div>
+
+<div class="recognition-wrapper">
+    
+    <div class="card control-panel">
+        <div class="card-body">
+            <h4 style="color: var(--primary-color); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-cogs"></i> 配置面板
+            </h4>
+
+            <form id="recognitionForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label class="form-label">上传测试图片</label>
+                    <div class="upload-area" id="dropArea" onclick="document.getElementById('fileInput').click()">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p style="margin: 0; color: #5a5c69; font-weight: 600;">点击或拖拽文件至此</p>
+                        <p style="font-size: 0.8rem; color: #858796;">支持 JPG, PNG, JPEG</p>
+                        <input type="file" id="fileInput" name="file" accept="image/*" style="display: none;" onchange="previewImage(this)">
+                    </div>
+                    <div id="fileName" style="margin-top: 10px; font-size: 0.85rem; color: var(--primary-color); text-align: center;"></div>
+                </div>
+
+                <hr style="border-top: 1px solid #eee; margin: 20px 0;">
+
+                <div class="form-group">
+                    <label class="form-label">YOLO 置信度阈值 (Confidence)</label>
+                    <div class="range-container">
+                        <input type="range" name="conf_thres" min="0" max="1" step="0.05" value="0.5" 
+                               oninput="document.getElementById('confVal').innerText = this.value">
+                        <span id="confVal" class="range-value">0.5</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">NMS IOU 阈值</label>
+                    <div class="range-container">
+                        <input type="range" name="iou_thres" min="0" max="1" step="0.05" value="0.45" 
+                               oninput="document.getElementById('iouVal').innerText = this.value">
+                        <span id="iouVal" class="range-value">0.45</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    <label class="form-label" style="margin: 0;">启用 OCR 车牌识别</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="use_ocr" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px;">
+                    <button type="button" class="btn-submit" style="width: 100%; display: flex; justify-content: center; align-items: center;" onclick="submitRecognition()">
+                        <i class="fas fa-play" style="margin-right: 8px;"></i> 开始识别分析
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card display-panel">
+        <div class="card-body">
+            <h4 style="color: var(--info-color); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; display: flex; justify-content: space-between;">
+                <span><i class="fas fa-chart-area"></i> 识别结果</span>
+                <span id="processTime" style="font-size: 0.9rem; color: #858796;">耗时: - ms</span>
+            </h4>
+
+            <div class="preview-container">
+                <div>
+                    <h5 class="form-label">原始图像</h5>
+                    <div class="image-box">
+                        <span class="box-label">Original</span>
+                        <img id="previewImg" src="" style="display: none;">
+                        <div class="empty-placeholder" id="previewPlaceholder">
+                            <i class="fas fa-image" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            暂无图片
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h5 class="form-label">识别结果</h5>
+                    <div class="image-box">
+                        <span class="box-label" style="background: var(--primary-color);">Result</span>
+                        <img id="resultImg" src="" style="display: none;">
+                        <div class="empty-placeholder" id="resultPlaceholder">
+                            <i class="fas fa-magic" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                            等待处理
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 25px;">
+                <h5 class="form-label"><i class="fas fa-terminal"></i> 识别详情数据</h5>
+                <div class="result-logs" id="logOutput">> 系统就绪，等待上传图片...</div>
+            </div>
+
+            <div id="ocrResultTable" style="margin-top: 20px; display: none;">
+                <h5 class="form-label">车辆信息提取</h5>
+                <div class="table-container">
+                    <table class="responsive-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>车牌号码</th>
+                                <th>置信度</th>
+                                <th>车辆类型</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ocrTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</div>
+<script>
+    // 拖拽上传逻辑
+    const dropArea = document.getElementById('dropArea');
+    const fileInput = document.getElementById('fileInput');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+
+    function highlight(e) {
+        dropArea.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        dropArea.classList.remove('dragover');
+    }
+
+    dropArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        previewImage(fileInput);
+    }
+
+    // 图片预览逻辑
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImg').style.display = 'block';
+                document.getElementById('previewPlaceholder').style.display = 'none';
+                document.getElementById('fileName').innerText = "已选择: " + input.files[0].name;
+                
+                // 清空结果
+                document.getElementById('resultImg').style.display = 'none';
+                document.getElementById('resultPlaceholder').style.display = 'flex';
+                document.getElementById('logOutput').innerHTML = "> 图片已加载，准备识别...";
+                document.getElementById('ocrResultTable').style.display = 'none';
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    // 提交识别逻辑
+    function submitRecognition() {
+        const file = document.getElementById('fileInput').files[0];
+        if (!file) {
+            alert('请先上传一张图片！');
+            return;
+        }
+
+        const formData = new FormData(document.getElementById('recognitionForm'));
+        const logOutput = document.getElementById('logOutput');
+        
+        // UI Loading 状态
+        logOutput.innerHTML = "> 正在上传并分析中...\n> YOLO推理中...";
+        const btn = document.querySelector('.btn-submit');
+        const originalBtnText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+        btn.disabled = true;
+
+        // 发起请求 (需要你在 app.py 中实现对应的 POST 逻辑)
+        fetch('/recognition', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 显示结果图
+                const resultImg = document.getElementById('resultImg');
+                // 假设后端返回图片的 base64 或者是 URL
+                resultImg.src = data.image_url; 
+                resultImg.style.display = 'block';
+                document.getElementById('resultPlaceholder').style.display = 'none';
+
+                // 更新日志
+                let logs = `> 识别成功！\n> 耗时: ${data.time_elapsed}s\n`;
+                if(data.results && data.results.length > 0) {
+                    logs += `> 检测到 ${data.results.length} 个目标:\n`;
+                    data.results.forEach((item, index) => {
+                        logs += `  [${index+1}] 类别: ${item.label}, 置信度: ${item.conf}, 坐标: ${item.bbox}\n`;
+                    });
+                } else {
+                    logs += "> 未检测到明显目标。\n";
+                }
+                logOutput.innerHTML = logs;
+                document.getElementById('processTime').innerText = `耗时: ${data.time_elapsed}s`;
+
+                // 如果有 OCR 结果，显示表格
+                if (data.ocr_data && data.ocr_data.length > 0) {
+                    document.getElementById('ocrResultTable').style.display = 'block';
+                    const tbody = document.getElementById('ocrTableBody');
+                    tbody.innerHTML = '';
+                    data.ocr_data.forEach((row, i) => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${i + 1}</td>
+                                <td><span class="status-badge status-in">${row.text}</span></td>
+                                <td>${row.conf}</td>
+                                <td>${row.type || '未知'}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            } else {
+                logOutput.innerHTML += `\n> 错误: ${data.message}`;
+                alert('识别失败: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            logOutput.innerHTML += `\n> 网络或服务器错误`;
+        })
+        .finally(() => {
+            btn.innerHTML = originalBtnText;
+            btn.disabled = false;
+        });
+    }
+</script>
 {% endblock %}

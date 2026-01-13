@@ -36,7 +36,12 @@
                     <i class="fa-solid fa-photo-film"></i><span>识别测试</span>
                 </a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-cogs"></i><span>系统配置</span></a></li>
+            <li class="nav-item">
+                <a href="{{ url_for('system_config') }}" 
+                    class="nav-link {% if request.endpoint == 'system_config' %}active{% endif %}">
+                    <i class="fas fa-cogs"></i><span>系统配置</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

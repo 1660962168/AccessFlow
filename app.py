@@ -33,6 +33,39 @@ def recognition():
 def records():
     return render_template('records.html')
 
+@app.route('/config', methods=['GET', 'POST'])
+def system_config():
+    # 获取配置（如果没有则创建一个默认的）
+    config_item = SystemConfig.query.first()
+    if not config_item:
+        config_item = SystemConfig()
+        db.session.add(config_item)
+        db.session.commit()
+
+    if request.method == 'POST':
+        try:
+            # 更新字段
+            config_item.conf_thres = float(request.form.get('conf_thres'))
+            config_item.iou_thres = float(request.form.get('iou_thres'))
+            # Checkbox 未选中时不会传值，需要特殊处理
+            config_item.use_ocr = True if request.form.get('use_ocr') == 'on' else False
+            
+            config_item.camera_source = request.form.get('camera_source')
+            config_item.retention_days = int(request.form.get('retention_days'))
+            
+            db.session.commit()
+            flash('系统配置已更新', 'success')
+            
+            # 这里可以添加逻辑：比如重置 YOLO 模型加载参数等
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'更新失败: {str(e)}', 'danger')
+        
+        return redirect(url_for('system_config'))
+
+    return render_template('config.html', config=config_item)
+
 @app.route('/password', methods=['GET','POST'])
 def password():
     if request.method == 'POST':
