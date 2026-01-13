@@ -29,7 +29,11 @@
                     <i class="fas fa-car"></i><span>车辆记录</span>
                 </a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link"><i class="fas fa-video"></i><span>实时监控</span></a></li>
+            <li class="nav-item">
+    <a href="{{ url_for('monitor') }}" class="nav-link {% if request.endpoint == 'monitor' %}active{% endif %}">
+        <i class="fas fa-video"></i><span>实时监控</span>
+    </a>
+</li>
             <li class="nav-item">
                 <a href="{{ url_for('recognition') }}"
                     class="nav-link {% if request.endpoint == 'recognition' %}active{% endif %}">

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}实时监控 - 智泊管理{% endblock %}
+
+{% block content %}
+<style>
+    /* 动态网格布局 */
+    .monitor-grid {
+        display: grid;
+        /* 自适应列：最小宽度 450px，放不下自动换行 */
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .monitor-card {
+        background: var(--white);
+        border-radius: 8px;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+        display: flex;
+        flex-direction: column;
+        border-top: 4px solid var(--primary-color);
+        min-height: 400px; /* 保证卡片有高度 */
+    }
+
+    /* 出口类型改为绿色顶部 */
+    .monitor-card[data-type="exit"] {
+        border-top-color: var(--success-color);
+    }
+
+    .monitor-header {
+        padding: 12px 20px;
+        border-bottom: 1px solid #e3e6f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* 视频播放/占位区 */
+    .video-wrapper {
+        flex-grow: 1;
+        background-color: #1a1c23;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    /* 只有当有真实视频画面覆盖在上面时，这个占位层会被挡住 */
+    .no-signal-layer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #5a5c69;
+        z-index: 1;
+        text-align: center;
+    }
+
+    /* 模拟真实播放器 (暂留接口) */
+    .live-player {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        z-index: 2;
+        display: none; /* 如果有流，JS 将其改为 block 并设置 src */
+    }
+</style>
+
+<div class="page-title">
+    <i class="fas fa-video"></i> 实时监控中心 
+    <span style="font-size: 0.9rem; color: #888; margin-left: 10px;">(共配置 {{ cameras|length }} 路视频流)</span>
+</div>
+
+{% if cameras|length == 0 %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i> 当前未配置任何监控视频流。请前往 <a href="{{ url_for('system_config') }}"><b>系统配置</b></a> 页面添加 RTSP 视频源。
+</div>
+{% endif %}
+
+<div class="monitor-grid">
+    
+    {% for cam in cameras %}
+    <div class="monitor-card" data-type="{{ cam.cam_type }}">
+        <div class="monitor-header">
+            <div style="font-weight: bold; color: #5a5c69;">
+                {% if cam.cam_type == 'entrance' %}
+                    <i class="fas fa-sign-in-alt" style="color: var(--primary-color);"></i>
+                {% else %}
+                    <i class="fas fa-sign-out-alt" style="color: var(--success-color);"></i>
+                {% endif %}
+                {{ cam.name }}
+            </div>
+            <span style="font-size: 0.75rem; color: #aaa;">RTSP READY</span>
+        </div>
+
+        <div class="video-wrapper">
+            <div class="no-signal-layer">
+                <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 10px; color: #2c303b;"></i>
+                <div style="font-family: monospace; font-size: 0.9rem;">NO VIDEO SIGNAL</div>
+                <div style="font-size: 0.75rem; margin-top: 5px; opacity: 0.7;">未检测到视频流输入</div>
+                <div style="font-size: 0.7rem; color: #3a3b45; margin-top: 10px; background: #000; padding: 2px 5px;">Source: {{ cam.rtsp_url }}</div>
+            </div>
+
+            </div>
+
+        <div style="padding: 10px 20px; background: #f8f9fc; border-top: 1px solid #eee; display: flex; justify-content: space-between; font-size: 0.8rem; color: #666;">
+            <span><i class="fas fa-server"></i> 识别服务: <span style="color: var(--success-color);">运行中</span></span>
+            <span>CAM_ID: {{ cam.id }}</span>
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

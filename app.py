@@ -33,38 +33,64 @@ def recognition():
 def records():
     return render_template('records.html')
 
+@app.route('/monitor')
+def monitor():
+    # 查询所有摄像头数据
+    cameras = Camera.query.all()
+    return render_template('monitor.html', cameras=cameras)
+
+# --- 新增：专门处理摄像头添加/删除的路由 ---
+@app.route('/camera/add', methods=['POST'])
+def add_camera():
+    name = request.form.get('name')
+    rtsp_url = request.form.get('rtsp_url')
+    cam_type = request.form.get('cam_type')
+    
+    if name and rtsp_url:
+        new_cam = Camera(name=name, rtsp_url=rtsp_url, cam_type=cam_type)
+        db.session.add(new_cam)
+        db.session.commit()
+        flash('摄像头添加成功', 'success')
+    else:
+        flash('请填写完整信息', 'warning')
+    return redirect(url_for('system_config'))
+
+@app.route('/camera/delete/<int:cam_id>')
+def delete_camera(cam_id):
+    cam = Camera.query.get(cam_id)
+    if cam:
+        db.session.delete(cam)
+        db.session.commit()
+        flash('摄像头已删除', 'success')
+    return redirect(url_for('system_config'))
+
 @app.route('/config', methods=['GET', 'POST'])
 def system_config():
-    # 获取配置（如果没有则创建一个默认的）
     config_item = SystemConfig.query.first()
     if not config_item:
         config_item = SystemConfig()
         db.session.add(config_item)
         db.session.commit()
 
+    # 获取所有摄像头列表传给前端
+    cameras = Camera.query.order_by(Camera.created_at.desc()).all()
+
     if request.method == 'POST':
         try:
-            # 更新字段
+            # 这里只处理 SystemConfig 的全局参数更新
             config_item.conf_thres = float(request.form.get('conf_thres'))
             config_item.iou_thres = float(request.form.get('iou_thres'))
-            # Checkbox 未选中时不会传值，需要特殊处理
             config_item.use_ocr = True if request.form.get('use_ocr') == 'on' else False
-            
-            config_item.camera_source = request.form.get('camera_source')
             config_item.retention_days = int(request.form.get('retention_days'))
             
             db.session.commit()
-            flash('系统配置已更新', 'success')
-            
-            # 这里可以添加逻辑：比如重置 YOLO 模型加载参数等
-            
+            flash('全局参数配置已更新', 'success')
         except Exception as e:
             db.session.rollback()
             flash(f'更新失败: {str(e)}', 'danger')
-        
         return redirect(url_for('system_config'))
 
-    return render_template('config.html', config=config_item)
+    return render_template('config.html', config=config_item, cameras=cameras)
 
 @app.route('/password', methods=['GET','POST'])
 def password():

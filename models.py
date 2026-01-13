@@ -28,20 +28,24 @@ class ParkingRecord(db.Model):
 class SystemConfig(db.Model):
     __tablename__ = 'system_config'
     id = db.Column(db.Integer, primary_key=True)
-    
     # 算法默认参数
     conf_thres = db.Column(db.Float, default=0.5)      # 置信度
     iou_thres = db.Column(db.Float, default=0.45)      # IOU阈值
-    use_ocr = db.Column(db.Boolean, default=True)      # 是否开启OCR
-    
-    # 输入源
-    camera_source = db.Column(db.String(255), default='0') # 默认为本地相机
-    
     # 数据维护
     retention_days = db.Column(db.Integer, default=30) # 记录保留天数
-    
     # 更新时间
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
-
     def __repr__(self):
         return '<SystemConfig %r>' % self.id
+    
+class Camera(db.Model):
+    __tablename__ = 'camera'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)        # 监控名称
+    rtsp_url = db.Column(db.String(255), nullable=False)    # RTSP地址
+    # 类型标识: 'entrance' (入口) 或 'exit' (出口)
+    cam_type = db.Column(db.String(20), default='entrance', nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    def __repr__(self):
+        return f'<Camera {self.name}>'

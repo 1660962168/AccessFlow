@@ -3,153 +3,187 @@
 {% block title %}系统配置 - 智泊管理{% endblock %}
 
 {% block content %}
-<div class="page-content">
+<style>
+    /* --- 局部样式：确保图标显示正常 --- */
+    .input-icon-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    
+    /* 输入框内的图标定位 */
+    .input-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #b7b9cc;
+        font-size: 0.9rem;
+        z-index: 10;
+        pointer-events: none; /* 让点击穿透到输入框 */
+    }
+
+    /* 输入框留出左侧内边距，防止文字压住图标 */
+    .form-control-icon {
+        padding-left: 35px !important; 
+    }
+
+    /* 聚焦时图标变色 */
+    .form-control-icon:focus + .input-icon,
+    .input-icon-wrapper:focus-within .input-icon {
+        color: var(--primary-color);
+    }
+    
+    /* 表格表头图标 */
+    .th-icon {
+        margin-right: 5px;
+        color: #dddfeb;
+    }
+</style>
+
 <div class="page-title">
     <i class="fas fa-cogs"></i> 系统全局配置
 </div>
 
-<div class="row" >
+<div class="row" style=" margin: 0 auto; display: flex; flex-direction: column; gap: 30px;">
+    
     <div class="card">
         <div class="card-body">
-            <h4 style="color: var(--primary-color); margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
-                <i class="fas fa-sliders-h"></i> 参数设置
+            <h4 style="color: var(--primary-color); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-brain"></i> 算法与数据参数
             </h4>
-
             <form method="POST" action="{{ url_for('system_config') }}">
                 
-                <div class="form-section" style="margin-bottom: 30px;">
-                    <h5 style="font-size: 1rem; color: #5a5c69; margin-bottom: 15px; font-weight: 700;">
-                        <i class="fas fa-brain" style="color: var(--info-color);"></i> 识别算法参数 (默认值)
-                    </h5>
-                    
-                    <div class="form-group">
-                        <label class="form-label">YOLO 置信度阈值 (Confidence)</label>
-                        <div class="range-container" style="display: flex; align-items: center; gap: 15px;">
-                            <input type="range" class="form-range" name="conf_thres" 
-                                   min="0.1" max="1.0" step="0.05" 
-                                   value="{{ config.conf_thres }}" 
-                                   oninput="document.getElementById('confVal').innerText = this.value"
-                                   style="flex-grow: 1;">
-                            <span id="confVal" class="range-value" style="font-weight: bold; color: var(--primary-color); width: 40px;">{{ config.conf_thres }}</span>
-                        </div>
-                        <small style="color: #858796; font-size: 0.8rem;">低于此分数的检测目标将被忽略</small>
+                <div class="row" style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">
+                            <i class="fas fa-bullseye" style="color: #ccc; margin-right: 5px;"></i> 
+                            YOLO 置信度 (<span id="confVal" style="color: var(--primary-color); font-weight: bold;">{{ config.conf_thres }}</span>)
+                        </label>
+                        <input type="range" class="form-range" name="conf_thres" min="0.1" max="1.0" step="0.05" 
+                               value="{{ config.conf_thres }}" style="width: 100%;"
+                               oninput="document.getElementById('confVal').innerText = this.value">
                     </div>
-
-                    <div class="form-group">
-                        <label class="form-label">NMS IOU 阈值</label>
-                        <div class="range-container" style="display: flex; align-items: center; gap: 15px;">
-                            <input type="range" class="form-range" name="iou_thres" 
-                                   min="0.1" max="1.0" step="0.05" 
-                                   value="{{ config.iou_thres }}"
-                                   oninput="document.getElementById('iouVal').innerText = this.value"
-                                   style="flex-grow: 1;">
-                            <span id="iouVal" class="range-value" style="font-weight: bold; color: var(--primary-color); width: 40px;">{{ config.iou_thres }}</span>
-                        </div>
-                        <small style="color: #858796; font-size: 0.8rem;">用于去除重叠的检测框</small>
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">
+                            <i class="fas fa-object-group" style="color: #ccc; margin-right: 5px;"></i> 
+                            IOU 阈值 (<span id="iouVal" style="color: var(--primary-color); font-weight: bold;">{{ config.iou_thres }}</span>)
+                        </label>
+                        <input type="range" class="form-range" name="iou_thres" min="0.1" max="1.0" step="0.05" 
+                               value="{{ config.iou_thres }}" style="width: 100%;"
+                               oninput="document.getElementById('iouVal').innerText = this.value">
                     </div>
                 </div>
 
-                <hr style="border-top: 1px dashed #e3e6f0; margin: 20px 0;">
-
-                <div class="form-section" style="margin-bottom: 30px;">
-                    <h5 style="font-size: 1rem; color: #5a5c69; margin-bottom: 15px; font-weight: 700;">
-                        <i class="fas fa-video" style="color: var(--warning-color);"></i> 监控设置
-                    </h5>
-                    
-                    <div class="form-group">
-                        <label class="form-label">摄像头地址 / 设备ID</label>
-                        <div class="input-icon-wrapper" style="position: relative;">
-                            <i class="fas fa-camera input-icon" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #b7b9cc;"></i>
-                            <input type="text" name="camera_source" class="form-control" 
-                                   value="{{ config.camera_source }}" 
-                                   placeholder="例如: 0 或 rtsp://admin:123456@192.168.1.64..."
-                                   style="padding-left: 40px;">
+                <div class="row" style="display: flex; gap: 20px; align-items: flex-end;">
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">历史记录保留 (天)</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-history input-icon"></i>
+                            <input type="number" class="form-control form-control-icon" name="retention_days" value="{{ config.retention_days }}" min="1">
                         </div>
-                        <small style="color: #858796; font-size: 0.8rem;">输入 0 使用本地默认相机，或输入 RTSP 流地址</small>
                     </div>
+                    
                 </div>
 
-                <hr style="border-top: 1px dashed #e3e6f0; margin: 20px 0;">
-
-                <div class="form-section">
-                    <h5 style="font-size: 1rem; color: #5a5c69; margin-bottom: 15px; font-weight: 700;">
-                        <i class="fas fa-database" style="color: var(--success-color);"></i> 数据维护
-                    </h5>
-                    
-                    <div class="form-group">
-                        <label class="form-label">历史记录保留天数</label>
-                        <div class="input-icon-wrapper" style="position: relative;">
-                            <i class="fas fa-calendar-alt input-icon" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #b7b9cc;"></i>
-                            <input type="number" name="retention_days" class="form-control" 
-                                   value="{{ config.retention_days }}" 
-                                   min="1" max="365"
-                                   style="padding-left: 40px;">
-                        </div>
-                        <small style="color: #858796; font-size: 0.8rem;">超过此时长的识别记录及其图片将被自动清理</small>
-                    </div>
-                </div>
-
-                <div class="form-actions" style="margin-top: 40px; text-align: right;">
-                    
+                <div style="text-align: right; margin-top: 20px;">
                     <button type="submit" class="btn-submit">
-                        <i class="fas fa-save"></i> 保存配置
+                        <i class="fas fa-save"></i> 保存全局参数
                     </button>
-                    <button type="reset" class="btn-cancel" style="margin-right: 10px;">重置更改</button>
                 </div>
-
             </form>
         </div>
     </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h4 style="color: var(--info-color); margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-video"></i> 监控流媒体管理
+            </h4>
+
+            <div class="table-responsive" style="margin-bottom: 30px;">
+                <table class="responsive-table">
+                    <thead>
+                        <tr>
+                            <th><i class="fas fa-hashtag th-icon"></i>ID</th>
+                            <th><i class="fas fa-tag th-icon"></i>监控名称</th>
+                            <th><i class="fas fa-map-marker-alt th-icon"></i>位置类型</th>
+                            <th><i class="fas fa-link th-icon"></i>RTSP 地址流</th>
+                            <th><i class="fas fa-tools th-icon"></i>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cam in cameras %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong>{{ cam.name }}</strong></td>
+                            <td>
+                                {% if cam.cam_type == 'entrance' %}
+                                <span class="status-badge status-in"><i class="fas fa-sign-in-alt"></i> 入口</span>
+                                {% else %}
+                                <span class="status-badge status-out"><i class="fas fa-sign-out-alt"></i> 出口</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-family: monospace; color: #888; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="{{ cam.rtsp_url }}">
+                                {{ cam.rtsp_url }}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('delete_camera', cam_id=cam.id) }}" class="btn-delete" onclick="return confirm('确定要删除这个摄像头吗？')">
+                                    <i class="fas fa-trash-alt"></i> 删除
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999; padding: 30px;">
+                                <i class="fas fa-video-slash" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                                暂无配置监控，请在下方添加
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="background: #f8f9fc; padding: 25px; border-radius: 8px; border: 1px dashed #d1d3e2;">
+                <h5 class="form-label" style="margin-bottom: 15px; color: var(--primary-color);">
+                    <i class="fas fa-plus-circle"></i> 新增监控设备
+                </h5>
+                <form method="POST" action="{{ url_for('add_camera') }}" style="display: grid; grid-template-columns: 1fr 2fr 1fr auto; gap: 15px; align-items: end;">
+                    
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem;">监控名称</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-pen input-icon"></i>
+                            <input type="text" name="name" class="form-control form-control-icon" placeholder="例: 北门入口" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem;">RTSP 流地址</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-network-wired input-icon"></i>
+                            <input type="text" name="rtsp_url" class="form-control form-control-icon" placeholder="rtsp://admin:pass@..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.8rem;">通道类型</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-exchange-alt input-icon"></i>
+                            <select name="cam_type" class="form-control form-control-icon">
+                                <option value="entrance">入口 (Entrance)</option>
+                                <option value="exit">出口 (Exit)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" style="margin-bottom: 1px;">
+                        <i class="fas fa-plus"></i> 添加
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
 </div>
-</div>
-<style>
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 16px;
-        width: 16px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-    input:checked + .slider {
-        background-color: var(--primary-color);
-    }
-    input:checked + .slider:before {
-        transform: translateX(26px);
-    }
-    
-    /* 滑块轨道样式优化 */
-    input[type=range] {
-        -webkit-appearance: none; 
-        background: transparent; 
-    }
-    input[type=range]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-    }
-    input[type=range]:focus {
-        outline: none; 
-    }
-    
-    /* Webkit (Chrome/Edge) */
-    input[type=range]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 6px;
-        cursor: pointer;
-        background: #e3e6f0;
-        border-radius: 3px;
-    }
-    input[type=range]::-webkit-slider-thumb {
-        height: 18px;
-        width: 18px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        cursor: pointer;
-        -webkit-appearance: none;
-        margin-top: -6px; /* 居中 */
-        box-shadow: 0 0 2px rgba(0,0,0,0.2);
-    }
-</style>
 {% endblock %}
