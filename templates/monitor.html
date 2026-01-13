@@ -47,27 +47,42 @@
         overflow: hidden;
     }
 
-    /* 只有当有真实视频画面覆盖在上面时，这个占位层会被挡住 */
-    .no-signal-layer {
+    /* 视频流样式 */
+    .video-stream {
+        width: 100%;
+        height: 400px;
+        object-fit: contain; /* 保持比例 */
+        display: block;
+    }
+
+    /* 底部 OCR 结果样式 */
+    .monitor-footer {
+        padding: 10px 20px;
+        background: #f8f9fc;
+        border-top: 1px solid #eee;
         display: flex;
         flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #5a5c69;
-        z-index: 1;
-        text-align: center;
+        gap: 5px;
     }
-
-    /* 模拟真实播放器 (暂留接口) */
-    .live-player {
-        position: absolute;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        z-index: 2;
-        display: none; /* 如果有流，JS 将其改为 block 并设置 src */
+    
+    .ocr-result-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        background: #fff;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .plate-number {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--primary-color);
     }
 </style>
-
+<div class="page-content">
 <div class="page-title">
     <i class="fas fa-video"></i> 实时监控中心 
     <span style="font-size: 0.9rem; color: #888; margin-left: 10px;">(共配置 {{ cameras|length }} 路视频流)</span>
@@ -82,7 +97,7 @@
 <div class="monitor-grid">
     
     {% for cam in cameras %}
-    <div class="monitor-card" data-type="{{ cam.cam_type }}">
+    <div class="monitor-card" data-type="{{ cam.cam_type }}" data-id="{{ cam.id }}">
         <div class="monitor-header">
             <div style="font-weight: bold; color: #5a5c69;">
                 {% if cam.cam_type == 'entrance' %}
@@ -92,26 +107,52 @@
                 {% endif %}
                 {{ cam.name }}
             </div>
-            <span style="font-size: 0.75rem; color: #aaa;">RTSP READY</span>
+            <span style="font-size: 0.75rem; color: #1cc88a;"><i class="fas fa-circle" style="font-size: 0.5rem;"></i> LIVE</span>
         </div>
 
         <div class="video-wrapper">
-            <div class="no-signal-layer">
-                <i class="fas fa-video-slash" style="font-size: 3rem; margin-bottom: 10px; color: #2c303b;"></i>
-                <div style="font-family: monospace; font-size: 0.9rem;">NO VIDEO SIGNAL</div>
-                <div style="font-size: 0.75rem; margin-top: 5px; opacity: 0.7;">未检测到视频流输入</div>
-                <div style="font-size: 0.7rem; color: #3a3b45; margin-top: 10px; background: #000; padding: 2px 5px;">Source: {{ cam.rtsp_url }}</div>
-            </div>
+            <img class="video-stream" src="{{ url_for('video_feed', cam_id=cam.id) }}" alt="正在加载视频流...">
+        </div>
 
+        <div class="monitor-footer">
+            <div class="ocr-result-box">
+                <span><i class="fas fa-car"></i> 识别车牌:</span>
+                <span class="plate-number" id="plate-{{ cam.id }}">等待识别...</span>
             </div>
-
-        <div style="padding: 10px 20px; background: #f8f9fc; border-top: 1px solid #eee; display: flex; justify-content: space-between; font-size: 0.8rem; color: #666;">
-            <span><i class="fas fa-server"></i> 识别服务: <span style="color: var(--success-color);">运行中</span></span>
-            <span>CAM_ID: {{ cam.id }}</span>
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #666;">
+                <span id="time-{{ cam.id }}">--:--:--</span>
+                <span>ID: {{ cam.id }}</span>
+            </div>
         </div>
     </div>
     {% endfor %}
 
 </div>
+</div>
+<script>
+    function updateMonitorData() {
+        fetch('/monitor/data')
+            .then(response => response.json())
+            .then(data => {
+                // data 结构: { "1": {"plate": "京A...", "time": "..."}, "2": ... }
+                for (const [camId, info] of Object.entries(data)) {
+                    const plateEl = document.getElementById(`plate-${camId}`);
+                    const timeEl = document.getElementById(`time-${camId}`);
+                    
+                    if (plateEl && info.plate) {
+                        plateEl.textContent = info.plate;
+                        // 如果置信度低可以用不同颜色，这里暂时默认
+                    }
+                    if (timeEl && info.time) {
+                        timeEl.textContent = "识别时间: " + info.time;
+                    }
+                }
+            })
+            .catch(err => console.error('获取监控数据失败:', err));
+    }
+
+    // 每 1 秒刷新一次 OCR 数据
+    setInterval(updateMonitorData, 1000);
+</script>
 
 {% endblock %}

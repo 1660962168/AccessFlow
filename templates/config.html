@@ -39,7 +39,7 @@
         color: #dddfeb;
     }
 </style>
-
+<div class="page-content">
 <div class="page-title">
     <i class="fas fa-cogs"></i> 系统全局配置
 </div>
@@ -75,6 +75,15 @@
                 </div>
 
                 <div class="row" style="display: flex; gap: 20px; align-items: flex-end;">
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label class="form-label">车库总车位数</label>
+                        <div class="input-icon-wrapper">
+                            <i class="fas fa-parking input-icon"></i>
+                            <input type="number" class="form-control form-control-icon" name="parking_slots" value="{{ config.parking_slots }}" min="0">
+                        </div>
+                    </div>
+
                     <div class="form-group" style="flex: 1;">
                         <label class="form-label">历史记录保留 (天)</label>
                         <div class="input-icon-wrapper">
@@ -185,5 +194,5 @@
 
         </div>
     </div>
-</div>
+</div></div>
 {% endblock %}

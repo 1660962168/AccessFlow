@@ -1,49 +1,83 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}智泊管理系统{% endblock %}</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* 针对 Logo 的额外内联美化 */
+        .brand-text {
+            font-size: 1.3rem;
+            font-weight: 800; /*以此加粗字体*/
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        .brand-highlight {
+            color: var(--primary-color); /* 使用 CSS 变量里的蓝色 */
+            font-style: italic;
+        }
+        .brand-icon {
+            font-size: 1.6rem;
+            background: -webkit-linear-gradient(#fff, #aabceb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-right: 12px !important; /* 覆盖原有的 margin */
+            filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));
+        }
+        
+        /* 导航栏激活状态微调 */
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(78,115,223,0.1) 0%, rgba(78,115,223,0.2) 100%);
+            border-left: 4px solid var(--primary-color);
+            color: #fff;
+        }
+    </style>
+    {% block head %}{% endblock %}
 </head>
-
 <body>
 
-    <div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <i class="fas fa-parking"></i> 智泊管理
+            <i class="fas fa-cube brand-icon"></i>
+            <span class="brand-text">智泊<span class="brand-highlight">Flow</span></span>
         </div>
+
         <ul class="nav-list">
-            <li class="nav-item">
+            <li>
                 <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
-                    <i class="fas fa-tachometer-alt"></i><span>系统主页</span>
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>控制台</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ url_for('records') }}"
-                    class="nav-link {% if request.endpoint == 'records' %}active{% endif %}">
-                    <i class="fas fa-car"></i><span>车辆记录</span>
+            <li>
+                <a href="{{ url_for('monitor') }}" class="nav-link {% if request.endpoint == 'monitor' %}active{% endif %}">
+                    <i class="fas fa-video"></i>
+                    <span>实时监控</span>
                 </a>
             </li>
-            <li class="nav-item">
-    <a href="{{ url_for('monitor') }}" class="nav-link {% if request.endpoint == 'monitor' %}active{% endif %}">
-        <i class="fas fa-video"></i><span>实时监控</span>
-    </a>
-</li>
-            <li class="nav-item">
-                <a href="{{ url_for('recognition') }}"
-                    class="nav-link {% if request.endpoint == 'recognition' %}active{% endif %}">
-                    <i class="fa-solid fa-photo-film"></i><span>识别测试</span>
+            <li>
+                <a href="{{ url_for('recognition') }}" class="nav-link {% if request.endpoint == 'recognition' %}active{% endif %}">
+                    <i class="fas fa-camera"></i>
+                    <span>图片识别</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ url_for('system_config') }}" 
-                    class="nav-link {% if request.endpoint == 'system_config' %}active{% endif %}">
-                    <i class="fas fa-cogs"></i><span>系统配置</span>
+            <li>
+                <a href="{{ url_for('records') }}" class="nav-link {% if request.endpoint == 'records' %}active{% endif %}">
+                    <i class="fas fa-list-ul"></i>
+                    <span>车辆记录</span>
+                </a>
+            </li>
+            <li style="margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
+                <div style="padding: 0 25px; font-size: 0.75rem; color: #888; text-transform: uppercase; margin-bottom: 5px;">设置</div>
+            </li>
+            <li>
+                <a href="{{ url_for('system_config') }}" class="nav-link {% if request.endpoint == 'system_config' %}active{% endif %}">
+                    <i class="fas fa-cogs"></i>
+                    <span>系统配置</span>
                 </a>
             </li>
         </ul>
@@ -54,79 +88,74 @@
             <div class="toggle-btn" onclick="toggleSidebar()">
                 <i class="fas fa-bars"></i>
             </div>
+
             <div class="user-profile" onclick="toggleDropdown()">
                 <div class="user-info">
-                    <span class="user-name">管理员：Admin</span>
-                    <div class="user-avatar">A</div>
+                    <span class="user-name">{{ session.get('username', '管理员') }}</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
                 </div>
                 <div class="dropdown-menu" id="userDropdown">
                     <a href="{{ url_for('password') }}" class="dropdown-item">
                         <i class="fas fa-key"></i> 修改密码
                     </a>
                     <div style="border-top: 1px solid #e3e6f0; margin: 5px 0;"></div>
-                    <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: var(--danger-color);"><i
-                            class="fas fa-sign-out-alt"></i> 退出登录</a>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item" style="color: var(--danger-color);">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </a>
                 </div>
             </div>
         </header>
 
-        <div class="page-content">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            <div class="flash-messages">
-                {% for category, message in messages %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-messages" style="padding: 20px 20px 0 20px;">
+              {% for category, message in messages %}
                 <div class="alert alert-{{ category }}">
-                    <i class="fas fa-info-circle"></i> {{ message }}
+                    {% if category == 'success' %}
+                        <i class="fas fa-check-circle"></i>
+                    {% elif category == 'danger' %}
+                        <i class="fas fa-exclamation-circle"></i>
+                    {% elif category == 'warning' %}
+                        <i class="fas fa-exclamation-triangle"></i>
+                    {% endif %}
+                    <span>{{ message }}</span>
                     <span class="close-btn" onclick="this.parentElement.style.display='none';">&times;</span>
                 </div>
-                {% endfor %}
+              {% endfor %}
             </div>
-            {% endif %}
-            {% endwith %}
-            {% block content %}
-            {% endblock %}
-        </div>
-    </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
     </div>
 
     <script>
+        // 侧边栏切换
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            const mainContent = document.querySelector('.main-content');
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            } else {
-                if (sidebar.style.marginLeft === '-250px') {
-                    sidebar.style.marginLeft = '0';
-                    mainContent.style.marginLeft = '250px';
-                } else {
-                    sidebar.style.marginLeft = '-250px';
-                    mainContent.style.marginLeft = '0';
-                }
-            }
+            document.getElementById('sidebar').classList.toggle('active');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
         }
-        function closeSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('overlay');
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            }
-        }
+
+        // 用户下拉菜单切换
         function toggleDropdown() {
             document.getElementById('userDropdown').classList.toggle('show');
         }
-        window.onclick = function (event) {
+
+        // 点击页面其他地方关闭下拉菜单
+        window.onclick = function(event) {
             if (!event.target.closest('.user-profile')) {
                 var dropdowns = document.getElementsByClassName("dropdown-menu");
                 for (var i = 0; i < dropdowns.length; i++) {
-                    if (dropdowns[i].classList.contains('show')) dropdowns[i].classList.remove('show');
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
                 }
             }
         }
     </script>
+    {% block scripts %}{% endblock %}
 </body>
-
 </html>

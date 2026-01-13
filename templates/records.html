@@ -1,76 +1,157 @@
-{% extends "base.html" %} {% block title %}车辆记录 - 智泊管理{% endblock %} {%
-block content %}
+{% extends "base.html" %} 
+{% block title %}车辆记录 - 智泊管理{% endblock %} 
+{% block content %}
 <div class="page-content">
-<h2 class="page-title">历史车辆记录查询</h2>
+  <h2 class="page-title">历史车辆记录查询</h2>
 
-<div
-  style="
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
-  "
->
-  <input
-    type="text"
-    placeholder="输入车牌号..."
-    style="padding: 8px; border: 1px solid #ddd; border-radius: 4px"
-  />
-  <button class="btn-sm" style="border: none; cursor: pointer">查询</button>
-</div>
+  <div
+    style="
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.05);
+    "
+  >
+    <form action="{{ url_for('records') }}" method="get" style="display: flex; gap: 10px;">
+      <input
+        type="text"
+        name="q"
+        value="{{ keyword }}"
+        placeholder="输入车牌号..."
+        style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 200px;"
+      />
+      <button type="submit" class="btn-sm" style="border: none; cursor: pointer; background: #4e73df; color: white; padding: 0 15px; border-radius: 4px;">
+        查询
+      </button>
+      {% if keyword %}
+      <a href="{{ url_for('records') }}" style="line-height: 32px; color: #858796; text-decoration: none;">清除筛选</a>
+      {% endif %}
+    </form>
+  </div>
 
-<div class="table-container">
-  <div class="table-responsive">
-    <table class="responsive-table">
-      <thead>
-        <tr>
-          <th>订单号</th>
-          <th>车牌号码</th>
-          <th>入场时间</th>
-          <th>出场时间</th>
-          <th>收费金额</th>
-          <th style="width: 100px">操作</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>ORDER_001</td>
-          <td>京A·88888</td>
-          <td>2023-10-27 08:00</td>
-          <td>2023-10-27 10:00</td>
-          <td>¥ 10.00</td>
-          <td>
-            <button class="btn-delete" onclick="confirmDelete('ORDER_001')">
-              <i class="fas fa-trash-alt"></i> 删除
-            </button>
-          </td>
-        </tr>
-        <tr>
-          <td>ORDER_002</td>
-          <td>沪C·66666</td>
-          <td>2023-10-27 09:00</td>
-          <td>2023-10-27 12:00</td>
-          <td>¥ 15.00</td>
-          <td>
-            <button class="btn-delete" onclick="confirmDelete('ORDER_002')">
-              <i class="fas fa-trash-alt"></i> 删除
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="table-container">
+    <div class="table-responsive">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>车牌号码</th>
+            <th>车牌类型</th>
+            <th>入场时间</th>
+            <th>出场时间</th>
+            <th>当前状态</th>
+            <th style="width: 100px">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if records %}
+            {% for record in records %}
+            <tr>
+              <td>{{ record.id }}</td>
+              <td style="font-weight: bold; font-size: 15px;">{{ record.plate_number }}</td>
+              <td>
+                {% if record.plate_type == 'BlueCard' %}
+                  <span style="background-color: #e3f2fd; color: #0d47a1; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid #bbdefb;">
+                    蓝牌
+                  </span>
+                {% elif record.plate_type == 'GreenCard' %}
+                  <span style="background-color: #e8f5e9; color: #1b5e20; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid #c8e6c9;">
+                    绿牌
+                  </span>
+                {% elif record.plate_type == 'YellowCard' %}
+                  <span style="background-color: #fffde7; color: #f57f17; padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; border: 1px solid #fff9c4;">
+                    黄牌
+                  </span>
+                {% else %}
+                  <span style="background-color: #f5f5f5; color: #616161; padding: 5px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #e0e0e0;">
+                    {{ record.plate_type }}
+                  </span>
+                {% endif %}
+              </td>
+              <td>{{ record.entry_time.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+              <td>
+                {% if record.exit_time %}
+                  {{ record.exit_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                {% else %}
+                  <span style="color: #ccc;">-</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if record.status == '入场' %}
+                  <span style="color: #4e73df; font-weight: bold;">
+                    <i class="fas fa-parking"></i> 停泊中
+                  </span>
+                {% else %}
+                  <span style="color: #858796;">
+                    <i class="fas fa-sign-out-alt"></i> 已出场
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                <button class="btn-delete" onclick="confirmDelete('{{ record.id }}', '{{ record.plate_number }}')">
+                  <i class="fas fa-trash-alt"></i> 删除
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 40px; color: #888;">
+                <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                暂无记录
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if pagination.pages > 1 %}
+    <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="color: #888; font-size: 14px;">
+        共 {{ pagination.total }} 条记录，当前第 {{ pagination.page }} / {{ pagination.pages }} 页
+      </div>
+      <div style="display: flex; gap: 5px;">
+        {% if pagination.has_prev %}
+          <a href="{{ url_for('records', page=pagination.prev_num, q=keyword) }}" class="btn-sm" style="text-decoration: none; background: #fff; border: 1px solid #ddd; color: #333;">上一页</a>
+        {% else %}
+          <span class="btn-sm" style="background: #f8f9fc; border: 1px solid #ddd; color: #ccc; cursor: not-allowed;">上一页</span>
+        {% endif %}
+
+        {% if pagination.has_next %}
+          <a href="{{ url_for('records', page=pagination.next_num, q=keyword) }}" class="btn-sm" style="text-decoration: none; background: #fff; border: 1px solid #ddd; color: #333;">下一页</a>
+        {% else %}
+          <span class="btn-sm" style="background: #f8f9fc; border: 1px solid #ddd; color: #ccc; cursor: not-allowed;">下一页</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
   </div>
 
   <script>
-    function confirmDelete(orderId) {
-      if (confirm("确定要删除订单 " + orderId + " 吗？此操作无法撤销。")) {
-        // 这里将来需要替换为真实的后端删除请求
-        // 例如: window.location.href = '/delete_record/' + orderId;
-        alert("模拟删除成功: " + orderId);
+    function confirmDelete(recordId, plateNum) {
+      if (confirm("确定要删除车牌 [" + plateNum + "] 的这条记录吗？\n此操作无法撤销。")) {
+        fetch('/record/delete/' + recordId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload(); 
+            } else {
+                alert('删除失败: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求出错，请检查网络');
+        });
       }
     }
   </script>
-</div>
 </div>
 {% endblock %}
