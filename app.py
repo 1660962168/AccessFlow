@@ -10,6 +10,9 @@ import time
 import numpy as np
 from werkzeug.utils import secure_filename
 
+from utils_yolo import YoloDetector
+from utils_ocr import OcrDetector
+
 app = Flask(__name__)
 # 绑定配置文件
 app.config.from_object(config)
@@ -19,6 +22,17 @@ migrate = Migrate(app, db)
 scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
+
+# --- 路径与模型初始化 ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
+UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
+# [指定] YOLO 权重路径
+WEIGHTS_PATH = os.path.join(BASE_DIR, 'weights', 'best.pt')
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
 
 
 @app.route('/')
