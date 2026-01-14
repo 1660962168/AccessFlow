@@ -18,7 +18,6 @@ from sqlalchemy import func  # 引入 func 用于 SQL 聚合查询
 from utils_ocr import OcrDetector
 from utils_yolo import YoloDetector
 
-
 app = Flask(__name__)
 app.config.from_object(config)
 db.init_app(app)
@@ -33,6 +32,8 @@ STATIC_FOLDER = os.path.join(BASE_DIR, 'static')
 UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploads')
 TEMP_FOLDER = os.path.join(STATIC_FOLDER, 'temp')
 WEIGHTS_PATH = os.path.join(BASE_DIR, 'weights', 'best.pt')
+os.environ["OPENCV_LOG_LEVEL"] = "SILENT"
+os.environ["OPENCV_FFMPEG_LOG_LEVEL"] = "0"
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(TEMP_FOLDER, exist_ok=True)
